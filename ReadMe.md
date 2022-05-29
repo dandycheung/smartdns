@@ -721,6 +721,13 @@ rtt min/avg/max/mdev = 5.954/6.133/6.313/0.195 ms
     $ echo | openssl s_client -connect '1.0.0.1:853' 2>/dev/null | openssl x509 -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64
     ```
 
+11. iOS系统解析缓慢问题怎么解决？  
+    IOS14开始，苹果支持了DNS HTTPS(TYPE65)记录的解析，此功能用于快速DNS查询和解决HTTPS链接相关的问题，但当前还是草案，另外会导致广告屏蔽等功能失效，建议通过如下配置关闭TYPE65记录查询。
+
+    ```sh
+    force-qtype-SOA 65
+    ```
+
 ## 编译
 
   SmartDNS 提供了编译软件包的脚本（`package/build-pkg.sh`），支持编译 LuCI、Debian、OpenWrt 和 Optware 安装包。

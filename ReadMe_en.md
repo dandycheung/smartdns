@@ -651,6 +651,13 @@ Note: Merlin firmware is derived from ASUS firmware and can theoretically be use
     echo | openssl s_client -connect '1.0.0.1:853' 2>/dev/null | openssl x509 -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64
     ````
 
+1. How to solve the problem of slow DNS resolution in iOS system?  
+    Since iOS14, Apple has supported the resolution of DNS HTTPS (TYPE65) records. This function is used for solving problems related to HTTPS connections, but it is still a draft, and it will cause some functions such as adblocking fail. It is recommended to disable it through the following configuration.
+
+    ````sh
+    force-qtype-SOA 65
+    ````
+
 ## Compile
 
 smartdns contains scripts for compiling packages, supports compiling luci, debian, openwrt, opare installation packages, and can execute `package/build-pkg.sh` compilation.
