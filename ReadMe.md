@@ -329,11 +329,20 @@ rtt min/avg/max/mdev = 5.954/6.133/6.313/0.195 ms
          ```
 
          或执行
+
          ```shell
          $ nslookup smartdns
          ```
 
          查看命令结果是否有解析出路由器的IP地址，如果是则表示生效。
+
+         或执行
+
+         ```shell
+         ping smartdns.
+         ```
+
+         检测ping是否解析对应主机的IP地址。
 
 
 4. 启动服务
@@ -566,7 +575,7 @@ rtt min/avg/max/mdev = 5.954/6.133/6.313/0.195 ms
 | server-tcp | 上游 TCP DNS | 无 | 可重复。<br>[ip][:port]：服务器 IP:端口（可选）<br>[-blacklist-ip]：配置 IP 过滤结果<br>[-whitelist-ip]：指定仅接受参数中配置的 IP 范围。<br>[-group [group] ...]：DNS 服务器所属组，比如 office 和 foreign，和 nameserver 配套使用<br>[-exclude-default-group]：将 DNS 服务器从默认组中排除  | server-tcp 8.8.8.8:53 |
 | server-tls | 上游 TLS DNS | 无 | 可重复。<br>[ip][:port]：服务器 IP:端口（可选)<br>[-spki-pin [sha256-pin]]：TLS 合法性校验 SPKI 值，base64 编码的 sha256 SPKI pin 值<br>[-host-name]：TLS SNI 名称<br>[-tls-host-verify]：TLS 证书主机名校验<br> [-no-check-certificate]：跳过证书校验<br>[-blacklist-ip]：配置 IP 过滤结果<br>[-whitelist-ip]：仅接受参数中配置的 IP 范围<br>[-group [group] ...]：DNS 服务器所属组，比如 office 和 foreign，和 nameserver 配套使用<br>[-exclude-default-group]：将 DNS 服务器从默认组中排除 | server-tls 8.8.8.8:853 |
 | server-https | 上游 HTTPS DNS | 无 | 可重复。<br>https://[host][:port]/path：服务器 IP:端口（可选）<br>[-spki-pin [sha256-pin]]：TLS 合法性校验 SPKI 值，base64 编码的 sha256 SPKI pin 值<br>[-host-name]：TLS SNI 名称<br>[-http-host]：http 协议头主机名<br>[-tls-host-verify]：TLS 证书主机名校验<br> [-no-check-certificate]：跳过证书校验<br>[-blacklist-ip]：配置 IP 过滤结果<br>[-whitelist-ip]：仅接受参数中配置的 IP 范围。<br>[-group [group] ...]：DNS 服务器所属组，比如 office 和 foreign，和 nameserver 配套使用<br>[-exclude-default-group]：将 DNS 服务器从默认组中排除 | server-https https://cloudflare-dns.com/dns-query |
-| speed-check-mode | 测速模式选择 | 无 | [ping\|tcp:[80]\|none] | speed-check-mode ping,tcp:80 |
+| speed-check-mode | 测速模式选择 | 无 | [ping\|tcp:[80]\|none] | speed-check-mode ping,tcp:80,tcp:443 |
 | address | 指定域名 IP 地址 | 无 | address /domain/[ip\|-\|-4\|-6\|#\|#4\|#6] <br>- 表示忽略 <br># 表示返回 SOA <br>4 表示 IPv4 <br>6 表示 IPv6 | address /www.example.com/1.2.3.4 |
 | nameserver | 指定域名使用 server 组解析 | 无 | nameserver /domain/[group\|-], group 为组名，- 表示忽略此规则，配套 server 中的 -group 参数使用 | nameserver /www.example.com/office |
 | ipset | 域名 ipset | 无 | ipset /domain/[ipset\|-\|#[4\|6]:[ipset\|-][,#[4\|6]:[ipset\|-]]]，-表示忽略 | ipset /www.example.com/#4:dns4,#6:- |
@@ -720,6 +729,24 @@ rtt min/avg/max/mdev = 5.954/6.133/6.313/0.195 ms
     ```sh
     $ echo | openssl s_client -connect '1.0.0.1:853' 2>/dev/null | openssl x509 -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64
     ```
+
+11. iOS系统解析缓慢问题怎么解决？  
+    IOS14开始，苹果支持了DNS HTTPS(TYPE65)记录的解析，此功能用于快速DNS查询和解决HTTPS链接相关的问题，但当前还是草案，另外会导致广告屏蔽等功能失效，建议通过如下配置关闭TYPE65记录查询。
+
+    ```sh
+    force-qtype-SOA 65
+    ```
+
+12. 如何解析本地主机名称？  
+    smartdns可以配合DNSMASQ的dhcp lease文件支持本地主机名->IP地址的解析，可以配置smartdns读取dnsmasq的lease文件，并支持解析。具体配置参数如下，（注意，DNSMASQ lease文件每个系统可能不一样，需要按实际情况配置）
+
+    ```
+    dnsmasq-lease-file /var/lib/misc/dnsmasq.leases
+    ```
+
+    配置完成后，可以直接使用主机名连接对应的机器。但需要注意：
+
+    * Windows系统默认使用mDNS解析地址，如需要在windows下用使用smartdns解析，则需要在主机名后面增加`.`，表示使用DNS解析。如`ping smartdns.`
 
 ## 编译
 
